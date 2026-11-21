@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0705">
+<title>مدينة الذكريات — عرض تفاعلي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0705;--card:rgba(42,26,16,.76);--gold:#e6c27a;--bronze:#a87c50;--tx:#f3e6d0;--mut:#b9a58a;--bd:rgba(230,194,122,.24);--glow:rgba(230,194,122,.45);--danger:#e07a6a;--ruqaa:'Aref Ruqaa',Tajawal,serif;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{font-family:var(--ruqaa);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.85;overflow-x:hidden;font-size:1.05rem}
+#bg{position:fixed;inset:-3%;z-index:-2;background:linear-gradient(rgba(11,7,5,.56),rgba(11,7,5,.93)),var(--img,none) center/cover no-repeat,#0b0705;animation:drift 40s ease-in-out infinite;translate:var(--px,0) var(--py,0)}
+#fx{position:fixed;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}
+button,input,select,textarea{font-family:var(--ruqaa);color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+main{max-width:740px;margin:0 auto;padding:22px 16px calc(104px + env(safe-area-inset-bottom,0px));animation:in .45s both}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes drift{50%{transform:scale(1.06) translate(-1%,-.8%)}}
+h1,h2,h3{font-family:var(--ruqaa);font-weight:700;color:var(--gold)}
+.hd{text-align:center;margin-bottom:8px}.hd h1{font-size:2.1rem}.mut{color:var(--mut)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:10px 22px;border-radius:99px;border:1px solid var(--bronze);background:rgba(168,124,80,.16);color:var(--gold);font-weight:700;transition:.28s}
+.btn:hover{box-shadow:0 0 22px var(--glow);transform:translateY(-2px)}.btn:active{transform:scale(.97)}
+.btn.go{background:linear-gradient(135deg,var(--gold),var(--bronze));color:#1a0f08;border:0}
+.btn.ghost{border-color:var(--bd);color:var(--mut);background:rgba(15,9,5,.45)}
+.ct{text-align:center;margin:10px 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* Orbit */
+.orb{position:relative;width:min(94vw,550px);aspect-ratio:1;margin:8px auto}
+.orb::before{content:"";position:absolute;inset:9%;border:1px dashed var(--bd);border-radius:50%;animation:spin 140s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.core{position:absolute;inset:32%;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(circle,rgba(230,194,122,.18),rgba(20,12,7,.65) 75%);border:1px solid var(--bd);box-shadow:0 0 50px rgba(230,194,122,.14)}
+.core b{font:700 2.6rem var(--ruqaa);color:var(--gold);line-height:1}.core span{color:var(--mut);font-size:.9rem}
+.core::after{content:"";position:absolute;inset:-6%;border-radius:50%;border:1px solid var(--glow);animation:pulse 3.2s ease-out infinite;pointer-events:none}
+@keyframes pulse{from{transform:scale(.92);opacity:.8}to{transform:scale(1.26);opacity:0}}
+.ray{position:absolute;left:50%;top:50%;width:42%;height:1px;transform-origin:0 50%;transform:rotate(var(--a));background:linear-gradient(90deg,transparent,rgba(230,194,122,.35));pointer-events:none}
+.nw{position:absolute;transform:translate(-50%,-50%);width:82px;display:grid;justify-items:center}
+.nd{display:grid;justify-items:center;animation:fl var(--d,5s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.nc{position:relative;overflow:hidden;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font:700 1.55rem var(--ruqaa);color:var(--gold);background:radial-gradient(circle at 35% 30%,#3d2718,#150c07);border:1px solid var(--bronze);transition:.32s}
+.nc svg,.nc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.nc span.lt{position:relative;z-index:2;text-shadow:0 2px 10px rgba(0,0,0,.85)}
+.nc i{position:absolute;top:-4px;inset-inline-end:-4px;z-index:3;min-width:21px;height:21px;padding:0 5px;border-radius:11px;background:var(--gold);color:#1a0f08;font:700 .78rem Tajawal;display:grid;place-items:center;font-style:normal}
+.nlb{margin-top:6px;font-size:.86rem;color:var(--mut);white-space:nowrap;transition:.3s}
+.nw:hover .nc,.nw:focus-visible .nc{transform:scale(1.18);border-color:var(--gold);box-shadow:0 0 24px var(--glow)}
+.nw:hover .nc svg,.nw:hover .nc img{transform:scale(1.1)}
+.nw:hover .nlb,.nw:focus-visible .nlb{color:var(--gold);font-weight:700}
+
+/* Cards, rows & nav */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;backdrop-filter:blur(12px)}
+.list{display:grid;gap:10px;margin:14px 0}
+.row{display:flex;gap:12px;align-items:center;width:100%;text-align:start;padding:13px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--card);transition:.28s;animation:in .38s both}
+.row:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.row b{display:block;font-size:1.08rem}.row small{color:var(--mut);font-size:.88rem}.row>div{flex:1;min-width:0}
+.av{position:relative;overflow:hidden;width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 1.3rem var(--ruqaa);color:var(--gold);background:#2a1a10;border:1px solid var(--bronze)}
+.av img,.av svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bn{position:fixed;bottom:0;inset-inline:0;z-index:30;display:flex;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(11,7,5,.94);backdrop-filter:blur(14px);border-top:1px solid var(--bd)}
+.bn button{flex:1;max-width:130px;min-height:48px;border-radius:14px;color:var(--mut);font-family:var(--ruqaa);font-size:1.05rem;font-weight:700;transition:.25s}
+.bn button.on{color:var(--gold);background:rgba(230,194,122,.14)}
+
+/* Modals & PowerPoint Deck */
+.back{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:14px;background:rgba(5,3,2,.84);backdrop-filter:blur(8px);animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.modal{width:min(620px,100%);max-height:92vh;overflow:auto;padding:22px;border-radius:24px;background:linear-gradient(165deg,#26170e,#120a06);border:1px solid var(--bronze);box-shadow:0 0 60px rgba(230,194,122,.16);animation:pop .35s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.ppt-modal{width:min(760px,100%);padding:0;overflow:hidden}
+.ppt-bar{height:4px;background:rgba(230,194,122,.14)}
+.ppt-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--bronze),var(--gold));transition:width .35s ease}
+.ppt-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 20px;border-bottom:1px solid var(--bd)}
+.ppt-badge{font-size:.9rem;color:var(--gold);background:rgba(230,194,122,.12);border:1px solid var(--bd);padding:4px 12px;border-radius:99px}
+.ppt-stage{padding:20px;animation:slideIn .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.slide-art{position:relative;width:100%;height:235px;border-radius:18px;overflow:hidden;border:1px solid var(--bronze);margin-bottom:14px;background:#160d08}
+.slide-art svg,.slide-art img{width:100%;height:100%;object-fit:cover;display:block}
+.slide-cap{position:absolute;inset-inline:0;bottom:0;padding:10px 14px;background:linear-gradient(transparent,rgba(10,6,4,.9));font-size:.9rem;color:var(--gold)}
+.ppt-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 20px;border-top:1px solid var(--bd);background:rgba(10,6,4,.55)}
+.ppt-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.ppt-dots button{width:10px;height:10px;border-radius:50%;background:rgba(230,194,122,.25);transition:.25s}
+.ppt-dots button.on{width:24px;border-radius:99px;background:var(--gold)}
+
+label{display:block;margin-top:12px;font-size:.98rem;color:var(--mut)}
+.hint-note{display:block;margin-top:4px;font-size:.82rem;color:var(--mut);opacity:.88}
+input:not([type=checkbox]):not([type=file]),select,textarea{display:block;width:100%;min-height:46px;margin-top:5px;padding:10px 14px;border-radius:14px;border:1px solid var(--bd);background:rgba(0,0,0,.38)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 14px rgba(230,194,122,.2)}
+select option{background:#1a100a}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.g2{grid-template-columns:1fr}}
+.chks{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chk{display:inline-flex!important;align-items:center;gap:6px;margin:0!important;padding:6px 14px;border:1px solid var(--bd);border-radius:99px;color:var(--tx)!important}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.acts .btn{flex:1;min-width:130px}
+.lit{margin-top:10px;padding:14px 16px;border-radius:16px;border:1px solid var(--bronze);background:rgba(168,124,80,.12);font-family:var(--ruqaa);font-size:1.25rem;line-height:2.1}
+.analysis-box{margin-top:10px;padding:12px 14px;border-radius:14px;border:1px dashed var(--bd);background:rgba(230,194,122,.05);font-size:.95rem}
+.th{display:flex;gap:10px;overflow-x:auto;padding:8px 0}
+.th .ph{position:relative;flex:none}
+.th .ph img{width:88px;height:88px;border-radius:14px;object-fit:cover;border:1px solid var(--bronze)}
+.th .ph button{position:absolute;top:-6px;inset-inline-end:-6px;padding:2px 9px;border-radius:99px;background:var(--danger);color:#fff;font-size:.78rem}
+.pvimg{width:92px;height:92px;border-radius:50%;object-fit:cover;border:1px solid var(--bronze);margin-top:8px}
+.lbi{max-width:94vw;max-height:88vh;border-radius:14px;border:1px solid var(--gold);animation:pop .35s both}
+#toast{position:fixed;z-index:90;bottom:calc(86px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);max-width:92vw;padding:10px 22px;border-radius:99px;background:#24160d;border:1px solid var(--gold);box-shadow:0 0 24px var(--glow);text-align:center}
+.ob{min-height:100vh;display:grid;place-content:center;padding:24px;text-align:center;max-width:420px;margin:0 auto}
+.ob h1{font-size:3.2rem}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<main id="app"></main>
+<nav class="bn" id="nav" aria-label="التنقل الرئيسي" hidden></nav>
+<div id="ov"></div><div id="toast" hidden role="status"></div>
+
+<script>
+/* ===== Storage ===== */
+const KEY='mc_ppt_lit_v1';
+const DEF=['الطفولة','المدرسة','الجامعة','الأصدقاء','السفر','الإنجازات','العائلة','لحظات خاصة','الأحلام','السِّجِلّ'];
+const IMG_ACCEPT='image/jpeg,image/png,image/webp,image/heic,image/heif';
+
+/* ===== Built-in Artistic Scenes inspired by the 6 visual moods ===== */
+const SCENES={
+  medals:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد الميدالية الذهبية والإنجاز">
+    <defs>
+      <radialGradient id="g1" cx="22%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffd97d"/><stop offset="55%" stop-color="#c9852b"/><stop offset="100%" stop-color="#3a1c08"/></radialGradient>
+      <linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d6342c"/><stop offset="50%" stop-color="#f7f2e7"/><stop offset="100%" stop-color="#274c8a"/></linearGradient>
+    </defs>
+    <rect width="640" height="300" fill="url(#g1)"/>
+    <g opacity=".22" fill="#2d1606"><rect x="315" y="45" width="295" height="225" rx="8"/><line x1="335" y1="80" x2="585" y2="80" stroke="#2d1606" stroke-width="3"/><line x1="335" y1="105" x2="570" y2="105" stroke="#2d1606" stroke-width="2"/><line x1="335" y1="128" x2="590" y2="128" stroke="#2d1606" stroke-width="2"/><line x1="335" y1="152" x2="560" y2="152" stroke="#2d1606" stroke-width="2"/><line x1="335" y1="176" x2="582" y2="176" stroke="#2d1606" stroke-width="2"/><line x1="335" y1="200" x2="545" y2="200" stroke="#2d1606" stroke-width="2"/></g>
+    <ellipse cx="90" cy="95" rx="85" ry="70" fill="#ffcf56" opacity=".45"/>
+    <rect x="62" y="48" width="54" height="86" rx="22" fill="#281307" stroke="#f0c469" stroke-width="2.5"/><ellipse cx="89" cy="92" rx="18" ry="28" fill="#ffb838" opacity=".85"/>
+    <path d="M450 0 L495 0 L452 125 L425 118 Z" fill="url(#rb)"/>
+    <path d="M510 0 L555 0 L478 128 L452 120 Z" fill="url(#rb)"/>
+    <circle cx="458" cy="172" r="64" fill="#d99b26" stroke="#fff0b8" stroke-width="4"/>
+    <circle cx="458" cy="172" r="46" fill="#be7e18" stroke="#f6cf76" stroke-width="2"/>
+    <circle cx="112" cy="252" r="46" fill="#d8dee9" stroke="#e6c27a" stroke-width="3"/><path d="M90 232 h44 v26 a22 22 0 0 1 -44 0 z" fill="#f3f6fa"/>
+  </svg>`,
+  trophy:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد الصعود نحو الكأس الذهبية عبر سلالم الكتب">
+    <defs>
+      <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#13293d"/><stop offset="65%" stop-color="#0d1924"/><stop offset="100%" stop-color="#090d12"/></linearGradient>
+      <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffd875" stop-opacity=".42"/><stop offset="100%" stop-color="#ffd875" stop-opacity="0"/></linearGradient>
+    </defs>
+    <rect width="640" height="300" fill="url(#bg2)"/>
+    <polygon points="250,0 390,0 485,300 155,300" fill="url(#bm)"/>
+    <rect x="255" y="135" width="130" height="165" fill="#d8b982" opacity=".75"/>
+    <rect x="242" y="122" width="156" height="16" rx="4" fill="#f2d59b"/>
+    <path d="M292 52 h56 v34 a28 28 0 0 1 -56 0 z" fill="#f4be46" stroke="#fff0b0" stroke-width="2.5"/>
+    <rect x="313" y="110" width="14" height="14" fill="#e2a82b"/><rect x="298" y="120" width="44" height="7" fill="#c78a1b"/>
+    <g fill="#a45a2a" stroke="#3b1d0b"><rect x="440" y="266" width="130" height="14" rx="2"/><rect x="462" y="250" width="125" height="14" rx="2"/><rect x="485" y="234" width="120" height="14" rx="2"/><rect x="508" y="218" width="112" height="14" rx="2"/><rect x="530" y="202" width="100" height="14" rx="2"/></g>
+    <g fill="#1c2a36"><circle cx="320" cy="168" r="11"/><path d="M300 183 h40 l6 62 h-52 z"/><rect x="304" y="245" width="12" height="55"/><rect x="324" y="245" width="12" height="55"/></g>
+  </svg>`,
+  nightsea:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد الليل والبحر والهلال وبرطمان الفراشات">
+    <defs>
+      <linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0b1528"/><stop offset="65%" stop-color="#1d3557"/><stop offset="100%" stop-color="#2a4d69"/></linearGradient>
+      <linearGradient id="wa" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#16324f"/><stop offset="100%" stop-color="#091522"/></linearGradient>
+    </defs>
+    <rect width="640" height="185" fill="url(#sk)"/>
+    <rect y="185" width="640" height="115" fill="url(#wa)"/>
+    <path d="M475 26 A28 28 0 1 0 512 64 A22 22 0 1 1 475 26 Z" fill="#ffe484"/>
+    <circle cx="110" cy="48" r="1.8" fill="#fff3b0"/><circle cx="220" cy="34" r="1.4" fill="#fff"/><circle cx="360" cy="56" r="2" fill="#ffe484"/><circle cx="575" cy="72" r="1.6" fill="#fff"/>
+    <path d="M0 185 L120 112 L245 162 L390 108 L535 154 L640 124 L640 185 Z" fill="#132238"/>
+    <path d="M0 185 Q170 215 340 245 T640 285" fill="none" stroke="#ffd166" stroke-width="3" opacity=".8"/>
+    <g transform="translate(275,168)"><rect x="14" y="0" width="62" height="14" rx="4" fill="#90b4ce" opacity=".7"/><rect x="8" y="14" width="74" height="112" rx="16" fill="#27496d" fill-opacity=".55" stroke="#bfe3ff" stroke-width="2"/><circle cx="32" cy="52" r="3" fill="#ffe680"/><circle cx="58" cy="74" r="3.5" fill="#ffe680"/><circle cx="42" cy="96" r="2.8" fill="#ffe680"/><path d="M36 44 q-10 -12 -18 0 q8 10 18 0 M36 44 q10 -12 18 0 q-8 10 -18 0" fill="#5bc0eb"/></g>
+  </svg>`,
+  study:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد مكتب العلم والكتب والضوء الدافئ">
+    <defs>
+      <linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f5e6c8"/><stop offset="100%" stop-color="#d4b483"/></linearGradient>
+    </defs>
+    <rect width="640" height="300" fill="url(#wl)"/>
+    <rect y="210" width="640" height="90" fill="#7c4d2b"/>
+    <rect x="460" y="25" width="145" height="150" rx="8" fill="#fff9eb" stroke="#b88b4a" stroke-width="2"/>
+    <g fill="#2d4739"><rect x="20" y="95" width="120" height="22" rx="3"/><rect x="20" y="120" width="120" height="22" rx="3"/><rect x="20" y="145" width="120" height="22" rx="3"/><rect x="20" y="170" width="120" height="22" rx="3"/></g>
+    <circle cx="320" cy="120" r="34" fill="#3a7ca5" stroke="#e6c27a" stroke-width="3"/>
+    <path d="M210 245 Q320 220 430 245 L430 278 Q320 255 210 278 Z" fill="#fffdf7" stroke="#8c6239" stroke-width="2"/>
+    <path d="M475 28 L435 125 L452 132 L492 34 Z" fill="#222"/><circle cx="442" cy="134" r="18" fill="#ffd166" opacity=".65"/>
+  </svg>`,
+  childhood:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد الطفولة والمدرسة في صباح دافئ">
+    <defs>
+      <linearGradient id="ch" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe8a3"/><stop offset="100%" stop-color="#f4a261"/></linearGradient>
+    </defs>
+    <rect width="640" height="300" fill="url(#ch)"/>
+    <rect y="195" width="640" height="105" fill="#d8b47c"/>
+    <rect x="220" y="45" width="240" height="125" rx="8" fill="#b5653d"/><rect x="315" y="105" width="50" height="65" fill="#4a2c18"/>
+    <rect x="24" y="110" width="118" height="68" rx="14" fill="#f9c74f" stroke="#222" stroke-width="2.5"/><rect x="38" y="122" width="24" height="20" rx="4" fill="#caf0f8"/><rect x="70" y="122" width="24" height="20" rx="4" fill="#caf0f8"/><circle cx="52" cy="180" r="11" fill="#222"/><circle cx="114" cy="180" r="11" fill="#222"/>
+    <g transform="translate(220,165)"><circle cx="0" cy="0" r="20" fill="#ffcdb2"/><rect x="-16" y="20" width="32" height="44" rx="8" fill="#457b9d"/><rect x="-22" y="24" width="10" height="32" rx="4" fill="#e63946"/></g>
+    <g transform="translate(320,168)"><circle cx="0" cy="0" r="20" fill="#ffcdb2"/><rect x="-16" y="20" width="32" height="44" rx="8" fill="#2a9d8f"/><rect x="12" y="24" width="10" height="32" rx="4" fill="#f4a261"/></g>
+    <g transform="translate(420,165)"><circle cx="0" cy="0" r="20" fill="#ffcdb2"/><rect x="-16" y="20" width="32" height="44" rx="8" fill="#e9c46a"/><rect x="-22" y="24" width="10" height="32" rx="4" fill="#264653"/></g>
+  </svg>`,
+  polaroid:`<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مشهد السجل والصور الفوتوغرافية والكاميرا الكلاسيكية">
+    <defs>
+      <radialGradient id="ar" cx="50%" cy="45%" r="70%"><stop offset="0%" stop-color="#3a2e25"/><stop offset="100%" stop-color="#140f0c"/></radialGradient>
+    </defs>
+    <rect width="640" height="300" fill="url(#ar)"/>
+    <g transform="translate(95,35) rotate(-14)"><rect width="84" height="104" rx="4" fill="#f4efe6"/><rect x="8" y="8" width="68" height="68" fill="#9e6b43"/></g>
+    <g transform="translate(230,22) rotate(8)"><rect width="74" height="92" rx="4" fill="#f4efe6"/><rect x="7" y="7" width="60" height="58" fill="#5c6b73"/></g>
+    <g transform="translate(450,38) rotate(16)"><rect width="88" height="108" rx="4" fill="#f4efe6"/><rect x="8" y="8" width="72" height="72" fill="#b08968"/></g>
+    <g transform="translate(370,145)"><rect x="0" y="18" width="155" height="92" rx="14" fill="#2c2927" stroke="#8d8277" stroke-width="2"/><rect x="35" y="4" width="52" height="16" rx="4" fill="#a89f91"/><circle cx="96" cy="64" r="34" fill="#181615" stroke="#c7b9a5" stroke-width="3"/><circle cx="96" cy="64" r="19" fill="#2b3a42"/></g>
+    <rect x="135" y="226" width="370" height="44" rx="14" fill="#0d0907" fill-opacity=".82" stroke="#e6c27a" stroke-opacity=".35"/>
+  </svg>`
+};
+
+const ST_SCENE={
+  s0:'childhood', s1:'study', s2:'study', s3:'childhood',
+  s4:'nightsea', s5:'medals', s6:'nightsea', s7:'nightsea',
+  s8:'trophy', s9:'polaroid'
+};
+const sceneForStation=id=>SCENES[ST_SCENE[id]||'polaroid'];
+
+/* ===== State ===== */
+const fresh=()=>({
+  user:null,
+  bg:null,
+  stations:DEF.map((n,i)=>({id:'s'+i,name:n,img:null})),
+  people:[],
+  mem:[]
+});
+const load=()=>{try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.stations&&d.mem)return d}catch(e){}return fresh()};
+let S=load(),V='home',draft=[],variant=0;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){toast('مساحة التخزين ممتلئة؛ قلل عدد الصور أو حجمها');return false}};
+const applyBg=()=>document.documentElement.style.setProperty('--img',S.bg?`url(${S.bg})`:'none');
+
+/* ===== Helpers ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const stName=id=>(S.stations.find(s=>s.id==id)||{name:'—'}).name;
+const byDate=(a,b)=>b.date>a.date?1:-1;
+const allMemoriesOrdered=()=>S.mem.slice().sort(byDate);
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const norm=s=>String(s||'').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase();
+const hs=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,11);
+
+function toast(t){
+  const e=$('#toast');e.textContent=t;e.hidden=false;
+  clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2800);
+}
+function modal(h,extraClass=''){
+  $('#ov').innerHTML=`<div class="back" data-a="bg"><div class="modal ${extraClass}" role="dialog" aria-modal="true" tabindex="-1">${h}</div></div>`;
+  $('#ov .modal').focus();
+}
+const closeModal=()=>{$('#ov').innerHTML=''};
+const confirmBtn=(b,fn)=>{
+  if(b.dataset.s)return fn();
+  b.dataset.s=1;b.textContent='اضغط مرة أخرى للتأكيد';
+  setTimeout(()=>{delete b.dataset.s},3500);
+};
+
+/* ===== Literary & Emotional Intelligence Engine ===== */
+const LEX={
+  joy:['سعيد','سعاد','فرح','مبسوط','بهج','مسرور','ضحك','ابتسم','طرب','سرور','غبطه'],
+  love:['حب','احب','عشق','حنان','دفء','مودة','ود','الفة'],
+  long:['اشتاق','شوق','حنين','افتقد','وحشه','ايام زمان','ذكريات','تذكار'],
+  pride:['فخر','فخور','افتخر','نجحت','تفوق','حققت','فزت','انجاز','كاس','ميداليه','قمه'],
+  sad:['حزن','حزين','بكيت','بكاء','الم','وجع','دموع','فقدت','فراق','رحيل','اسى'],
+  calm:['هدوء','هادئ','سكينه','راحه','طمان','سلام','استرخ','ليل','بحر','قمر'],
+  thrill:['حماس','متحمس','اثاره','مغامره','اول مره','اول يوم','انبهار','مذهول','صعود'],
+  thank:['امتنان','شكر','ممتن','نعمه','الحمد','فضل'],
+  fear:['خوف','خايف','خائف','قلق','توتر','رهبه','ارتباك','تردد']
+};
+
+const OPENERS={
+  joy:[
+    'أشرق في الصدر فرحٌ صافٍ كضوء الصباح حين يتسلل إلى غرفةٍ هادئة.',
+    'فاض القلبُ بهجةً نبيلةً جعلت التفاصيل الصغيرة تلمع كأنها تُرى لأول مرة.',
+    'بلغت المسرةُ في النفس ذروتها حتى صار في كل نبضةٍ لحنٌ مطمئن لا يزول.'
+  ],
+  love:[
+    'لامس القلبَ دفءٌ إنسانيٌّ عميق يشبه مرفأً آمناً بعد طول مسير.',
+    'سكنت الطمأنينةُ في الوجدان كأن القرب وحده يختصر المسافات والسنين.',
+    'امتزج الودُّ باللحظة فصارت الذكرى أثرَ حنانٍ باقٍ في الذاكرة.'
+  ],
+  long:[
+    'مرّ الحنينُ على الخاطر كنسيمٍ يحمل رائحة الأيام التي لا تتكرر مرتين.',
+    'استيقظ شوقٌ قديمٌ في الذاكرة يفتح نافذةً على زمنٍ ما زال ينبض في القلب.',
+    'ثقل الحنينُ حتى صار الماضي حاضراً بكامل تفاصليه وصوته ووقعه.'
+  ],
+  pride:[
+    'وقف الإنسانُ في تلك اللحظة مرفوعَ الرأس وقد رأى ثمرةَ الصبر والاجتهاد.',
+    'ارتفع في الداخل شعورُ فخرٍ هادئٍ يخبرك أن كل خطوةٍ صعبة كان لها معنى.',
+    'عانق الإنجازُ تعبَ الطريق، فصارت اللحظة تاجاً يزهو به سجلُّ العمر.'
+  ],
+  sad:[
+    'عبرت غمامةُ شجنٍ خفيفةُ الظل على صفاء النفس، تاركةً صدىً صادقاً لا يُنسى.',
+    'أثقل الأسى شيئاً في الداخل، لكنه علّم القلب عمقاً لا يُمنح إلا لمن شعر.',
+    'انكسر خاطرٌ أو رحل مشهد، فبقيت الكلمات أضيق من أن تحيط بثقل الفقد.'
+  ],
+  calm:[
+    'سكنت الروحُ كما يسكن الماءُ حين يهدأ الريح وتصطفّ النجوم في الأعالي.',
+    'هبطت سكينةٌ نادرة جعلت الزمن يمشي ببطءٍ كأنه يحرس جمال اللحظة.',
+    'عمّ سلامٌ داخليٌّ عميق جعل الصمت أبلغ من كل ضجيجٍ حولنا.'
+  ],
+  thrill:[
+    'اشتعلت في القلب شرارةُ حماسٍ وشغفٍ كأن أفقاً جديداً ينفتح أمام العين.',
+    'خفق القلبُ بإيقاع المغامرة والانطلاق نحو تجربةٍ تترك بصمتها الأولى.',
+    'اجتاح النفسَ انبهارٌ حيٌّ جعل الخطوات أسرع والنظرة أوسع نحو الآتي.'
+  ],
+  thank:[
+    'امتلأ القلبُ بامتنانٍ خاشعٍ لكل نعمةٍ حضرت في وقتها ولكل يدٍ مدّت خيراً.',
+    'حضر الشكرُ في الوجدان قبل الحروف، إدراكاً لقيمة اللحظة ومن شارك فيها.',
+    'فاض الامتنانُ في النفس حتى غدت الذكرى دعاءً صادقاً يرافق صاحبها.'
+  ],
+  fear:[
+    'مرّت رعشةُ رهبةٍ خفيفةٍ على أبواب المجهول، ثم سرعان ما توازنت بالثبات.',
+    'اضطرب القلبُ لحظةً أمام اختبار الطريق، لكن العزم بقي أصلب من التردد.',
+    'حضر القلقُ كظلٍّ عابرٍ يرافق اللحظات الفارقة قبل أن تتضح الرؤية.'
+  ],
+  neutral:[
+    'استقرت هذه اللحظة في الذاكرة بهدوءٍ وقورٍ كصفحةٍ محفوظةٍ بعناية.',
+    'حملت التفاصيلُ معنىً صافياً لا يحتاج إلى صخبٍ ليبقى حاضراً في البال.',
+    'بقيت المشاهدُ متماسكةً في الوجدان كإطارٍ يجمع الزمن والمكان معاً.'
+  ]
+};
+
+const CLOSINGS=[
+  'وهكذا تبقى الذكرى مرآةً تعكس ما كنا عليه وما صرنا إليه.',
+  'وما أجمل أن تظل اللحظات الصادقة منارةً نعود إليها كلما احتجنا إلى ذواتنا.',
+  'تطوي الأيام صفحاتها، وتبقى هذه الذكرى حيةً كأنها كُتبت بحبرٍ لا يبهت.'
+];
+
+const STRONG=['لا توصف','لا يوصف','يتعذر','فوق الوصف','لا حدود','تعجز','قصوى','مذهل'];
+const INTENS=['للغايه','جدا','كثير','بشده','هائل','عميق','اكثر من','تماما'];
+const MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const SEAS=m=>m<2||m==11?'الشتاء':m<5?'الربيع':m<8?'الصيف':'الخريف';
+
+function emotions(text){
+  const t=norm(text),sc={};
+  for(const k in LEX){
+    LEX[k].forEach(w=>{if(t.includes(norm(w)))sc[k]=(sc[k]||0)+1});
+  }
+  const top=Object.entries(sc).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
+  const lv=STRONG.some(w=>t.includes(norm(w)))?2:(INTENS.some(w=>t.includes(w))||t.includes('!')?1:0);
+  return{top,lv};
+}
+
+function compose(m,v=0){
+  const {top,lv}=emotions([m.feeling,m.desc,m.title].join(' '));
+  const e=top[0]||'neutral';
+  const h=hs((m.feeling||'')+(m.desc||'')+m.title)+v;
+  const d=new Date(m.date+'T00:00:00'),ok=!isNaN(d);
+  const age=ok&&S.user?d.getFullYear()-S.user.year:0;
+  const yrs=ok?new Date().getFullYear()-d.getFullYear():0;
+  const ps=(m.people||[]).map(id=>S.people.find(p=>p.id==id)?.name).filter(Boolean);
+
+  const parts=[];
+  if(ok)parts.push(`في ${SEAS(d.getMonth())} من عام ${d.getFullYear()} (${MON[d.getMonth()]})`);
+  if(m.loc)parts.push(`في رحاب ${m.loc}`);
+  if(ps.length)parts.push(`برفقة ${ps.join(' و')}`);
+
+  const frame=`تجلّت ذكرى «${m.title}» ضمن منزل «${stName(m.st)}»${parts.length?'، '+parts.join('، '):''}${age>0&&age<120?`، في عمرٍ بلغ ${age} عاماً`:''}.`;
+  const descNote=m.desc?`ومن تفاصيل المشهد أن ${m.desc.replace(/[.،]+$/,'')}.`:'';
+  const subNote=top[1]?`كما لامسها ظلٌّ من ${OPENERS[top[1]][0]}`:'';
+  const timeNote=yrs>=1?`ومضى على تلك اللحظة ${yrs==1?'عامٌ واحد':yrs==2?'عامان':yrs<=10?yrs+' أعوام':yrs+' عاماً'} دون أن يخبو بريقها.`:'';
+
+  const seq=[OPENERS[e][lv],frame,descNote,subNote,timeNote].filter(Boolean);
+  if(h%2)seq.reverse();
+  seq.push(CLOSINGS[h%CLOSINGS.length]);
+  return seq.join(' ');
+}
+
+/* ===== Local Image Analyzer (Pixels + Aspect + Literary Reading) ===== */
+function analyze(img,w,h){
+  const c=document.createElement('canvas');c.width=c.height=24;
+  const x=c.getContext('2d');x.drawImage(img,0,0,24,24);
+  const d=x.getImageData(0,0,24,24).data;
+  let r=0,g=0,b=0,s=0,dark=0;
+  for(let i=0;i<d.length;i+=4){
+    r+=d[i];g+=d[i+1];b+=d[i+2];
+    const lum=.299*d[i]+.587*d[i+1]+.114*d[i+2];
+    if(lum<65)dark++;
+    const mx=Math.max(d[i],d[i+1],d[i+2]);
+    s+=(mx-Math.min(d[i],d[i+1],d[i+2]))/(mx||1);
+  }
+  const n=576;
+  return{l:(r+g+b)/(3*n),w:(r-b)/n,s:s/n,o:w/h,dark:dark/n};
+}
+
+function describeImg(im,m,i=0){
+  const a=im.an;
+  if(!a)return `لقطة ${i+1} مرافقة لذكرى «${m.title}» تضيف حضوراً بصرياً للمشهد.`;
+  const light=a.l<68?'إضاءة خافتة شاعرية تميل للظلال الدافئة':a.l<150?'إضاءة متوازنة هادئة مريحة للعين':'إضاءة مشرقة واضحة التفاصيل';
+  const tone=a.w>24?'تغلب عليها حرارة الذهبي والعنبر':a.w<-14?'تميل إلى برودة الأزرق والليل':'تتوزع فيها الألوان بتوازن طبيعي';
+  const sat=a.s<.18?'بطابع كلاسيكي هادئ يشبه صور السِّجِلّ':a.s>.46?'بتشبع لوني حيوي لافت':'بألوان متناغمة دون مبالغة';
+  const frame=a.o>1.22?'بكادر أفقي رحب':a.o<.85?'بكادر عمودي يبرز العمق':'بكادر متقارب ومتماسك';
+  const mood=a.dark>.52?'، وتوحي بأجواء تأمل مسائية':a.l>170?'، وتبثّ إشراقة صباحية صافية':'';
+  return `تحليل الصورة (${i+1}) في «${m.title}»: ${light}، ${tone}، ${sat}، ${frame}${mood}.`;
+}
+
+/* ===== Search / Ask ===== */
+const STOP=['ماذا','اين','متى','عن','ذكريات','ذكرياتي','ذكري','ذكره','كانت','اخبرني','اعرض','هل','لدي','حدث','في','من','الي','على','هي','ما','كم'];
+function ask(q){
+  const n=norm(q),toks=n.split(/\s+/).filter(w=>w.length>1&&!STOP.includes(w));
+  if(/كم/.test(n)&&/ذكر/.test(n)&&!toks.length){
+    return{say:`لديك ${S.mem.length} ذكرى موزعة على ${new Set(S.mem.map(m=>m.st)).size} من المنازل.`,list:allMemoriesOrdered()};
+  }
+  if(!toks.length)return{say:'',list:allMemoriesOrdered()};
+  const sc=m=>{
+    const hay=norm([m.title,m.loc,m.feeling,m.desc,m.lit,m.date,stName(m.st),...(m.people||[]).map(id=>S.people.find(p=>p.id==id)?.name)].join(' '));
+    return toks.filter(t=>hay.includes(t)).length;
+  };
+  const list=S.mem.map(m=>[m,sc(m)]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  return{
+    say:list.length?(list.length==1?'وجدت ذكرى واحدة مطابقة.':list.length==2?'وجدت ذكرتين مطابقتين.':`وجدت ${list.length} ذكريات مطابقة.`):'',
+    list
+  };
+}
+
+/* ===== Image Reader & Media Helpers ===== */
+const readImg=(f,max,q)=>new Promise((res,rej)=>{
+  const im=new Image(),u=URL.createObjectURL(f);
+  im.onload=()=>{
+    const s=Math.min(1,max/Math.max(im.width,im.height));
+    const c=document.createElement('canvas');
+    c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    const an=analyze(im,im.width,im.height);
+    URL.revokeObjectURL(u);
+    res({url:c.toDataURL('image/jpeg',q),an,name:f.name});
+  };
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'))};
+  im.src=u;
+});
+
+function openPicker(inp){
+  if(!inp)return;
+  inp.value='';
+  inp.click();
+}
+
+const avatar=p=>p.photo
+  ?`<span class="av"><img src="${p.photo}" alt="${esc(p.name)}" loading="lazy"></span>`
+  :`<span class="av" aria-hidden="true">${esc(p.name[0]||'')}</span>`;
+
+const stFace=s=>{
+  if(s.img)return `<span class="lt">${esc(s.name[0])}</span><img src="${s.img}" alt="${esc(s.name)}" onerror="this.remove()">`;
+  return `<span class="lt">${esc(s.name[0])}</span>${sceneForStation(s.id)}`;
+};
+
+const memArt=m=>{
+  if(m.imgs&&m.imgs[0])return `<img src="${m.imgs[0].url}" alt="${esc(m.title)}">`;
+  return sceneForStation(m.st);
+};
+
+/* ===== Views ===== */
+const memRow=(m,i=0)=>`
+  <button class="row" style="animation-delay:${i*45}ms" data-a="mem" data-id="${m.id}">
+    <span class="av">${memArt(m)}</span>
+    <div>
+      <b>${esc(m.title)}</b>
+      <small>وقعت في ${m.date} · ${esc(m.loc||'بلا موضع')} · ${esc(stName(m.st))}</small>
+    </div>
+  </button>`;
+
+const VIEWS={
+  home(){
+    const n=S.stations.length,age=new Date().getFullYear()-S.user.year;
+    return `
+      <header class="hd">
+        <h1>مرحباً ${esc(S.user.name)}</h1>
+        <p class="mut">${age>0&&age<130?age+' ربيعاً من الحكايات · ':''}${S.mem.length?S.mem.length+' ذكرى':'مدينتك ما زالت هادئة'}</p>
+      </header>
+      <div class="orb">
+        ${S.stations.map((s,i)=>`<i class="ray" style="--a:${(-90+i*360/n).toFixed(1)}deg"></i>`).join('')}
+        <div class="core"><b>${S.mem.length}</b><span>ذكرى</span></div>
+        ${S.stations.map((s,i)=>{
+          const a=-Math.PI/2+i*2*Math.PI/n,c=S.mem.filter(m=>m.st==s.id).length;
+          return `<button class="nw" data-a="st" data-id="${s.id}" aria-label="منزل ${esc(s.name)}" style="left:${(50+42*Math.cos(a)).toFixed(1)}%;top:${(50+42*Math.sin(a)).toFixed(1)}%">
+            <span class="nd" style="--d:${4+i%3}s;--dl:-${(i*.8).toFixed(1)}s">
+              <span class="nc">${stFace(s)}${c?`<i>${c}</i>`:''}</span>
+              <span class="nlb">${esc(s.name)}</span>
+            </span>
+          </button>`;
+        }).join('')}
+      </div>
+      <div class="ct">
+        <button class="btn go" data-a="addm">قَيِّد ذكرى</button>
+        <button class="btn" data-a="pptAll">عرض بوربوينت (${S.mem.length})</button>
+      </div>`;
+  },
+  people(){
+    return `
+      <header class="hd"><h1>الأَخِلّاء</h1><p class="mut">الأوفياء الذين شاركوك منازل الذكريات</p></header>
+      <div class="ct"><button class="btn go" data-a="addp">إضافة خليل</button></div>
+      <div class="list">${S.people.length?S.people.map((p,i)=>{
+        const c=S.mem.filter(m=>m.people.includes(p.id)).length;
+        return `<div class="row" style="animation-delay:${i*45}ms">
+          ${avatar(p)}
+          <div><b>${esc(p.name)}</b><small>${esc(p.trait||'')}${c?' · '+c+' ذكرى':''}</small></div>
+          <button class="btn ghost" data-a="delp" data-id="${p.id}">حذف</button>
+        </div>`;
+      }).join(''):'<div class="card ct mut">لم تُضف خليلاً بعد. أضف من رافقك ليظهر في حكاياتك.</div>'}</div>`;
+  },
+  stations(){
+    return `
+      <header class="hd"><h1>المَنازِل</h1><p class="mut">منازل رحلتك بمشاهدها الفنية وصورها</p></header>
+      <form class="card" data-f="addst">
+        <label>منزل جديد<input name="n" required maxlength="24" placeholder="مثال: البدايات أو الترحال"></label>
+        <button type="button" class="btn" style="width:100%;margin-top:14px" data-a="pick" data-id="fs">اختيار صورة المنزل من الألبوم</button>
+        <input type="file" id="fs" name="i" accept="${IMG_ACCEPT}" hidden data-pv="pvs">
+        <div id="pvs" class="ct"></div>
+        <div class="acts"><button class="btn go" type="submit">إضافة المنزل</button></div>
+      </form>
+      <div class="list">${S.stations.map((s,i)=>`
+        <div class="row" style="animation-delay:${i*40}ms">
+          <span class="av">${stFace(s)}</span>
+          <div><b>${esc(s.name)}</b><small>${S.mem.filter(m=>m.st==s.id).length} ذكرى</small></div>
+          <button class="btn ghost" data-a="st" data-id="${s.id}">فتح</button>
+          <button class="btn ghost" data-a="pick" data-id="sti_${s.id}">تغيير الصورة</button>
+          <input type="file" accept="${IMG_ACCEPT}" hidden data-sti="${s.id}" id="sti_${s.id}">
+          ${s.id[0]=='c'?`<button class="btn ghost" data-a="delst" data-id="${s.id}">حذف</button>`:''}
+        </div>`).join('')}</div>`;
+  },
+  archive(){
+    return `
+      <header class="hd"><h1>السِّجِلّ</h1><p class="mut">استعد ذكرى بكلمة أو موضع أو اسم خليل</p></header>
+      <input id="q" type="search" aria-label="بحث" placeholder="ابحث في السِّجِلّ عن ذكرى أو خليل أو موضع">
+      <p class="mut" id="say" style="margin-top:8px" aria-live="polite"></p>
+      <div class="list" id="res">${archList('')}</div>`;
+  },
+  settings(){
+    return `
+      <header class="hd"><h1>التَّدْبِير</h1></header>
+      <form class="card" data-f="prof">
+        <label>الاسم<input name="n" required value="${esc(S.user.name)}"></label>
+        <label>سنة الميلاد<input name="y" type="number" inputmode="numeric" min="1900" max="${new Date().getFullYear()}" required value="${S.user.year}"></label>
+        <div class="acts"><button class="btn go" type="submit">حفظ</button></div>
+      </form>
+      <div class="card" style="margin-top:14px">
+        <b>خلفية المدينة</b>
+        <div class="acts">
+          <button class="btn" data-a="pick" data-id="fb">اختيار خلفية من الألبوم</button>
+          <input type="file" id="fb" accept="${IMG_ACCEPT}" hidden data-bg="1">
+          <button class="btn ghost" data-a="rbg">الخلفية الافتراضية</button>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn" data-a="exp">تصدير السِّجِلّ</button>
+        <button class="btn ghost" data-a="reset">محو كل الذكريات</button>
+      </div>`;
+  }
+};
+
+function archList(q){
+  const r=ask(q);const s=$('#say');if(s)s.textContent=r.say;
+  return r.list.length
+    ?r.list.map(memRow).join('')
+    :`<div class="card ct mut">${S.mem.length?'لا توجد ذكريات مطابقة.':'السِّجِلّ خالٍ. أول ذكرى تفتح باب الحكايات.'}</div>`;
+}
+
+const onboard=()=>`
+  <form class="ob" data-f="start">
+    <h1>مدينة الذكريات</h1>
+    <p class="mut">مدينتك ما زالت هادئة. عرّفنا بنفسك لنبدأ رحلة الشرائح.</p>
+    <label>اسمك<input name="n" required maxlength="30" autocomplete="name"></label>
+    <label>سنة ميلادك<input name="y" type="number" inputmode="numeric" min="1900" max="${new Date().getFullYear()}" required></label>
+    <div class="acts"><button class="btn go" type="submit">ابدأ</button></div>
+  </form>`;
+
+/* ===== PowerPoint Slide Deck Engine (Always loads ALL memories) ===== */
+let deckList=[],deckIdx=0,deckTitle='عرض جميع الذكريات';
+
+function openDeck(startIndex=0,title='عرض جميع الذكريات'){
+  const list=allMemoriesOrdered();
+  if(!list.length){toast('لا توجد ذكريات للعرض في الشرائح بعد');return}
+  deckList=list;
+  deckIdx=Math.max(0,Math.min(startIndex,list.length-1));
+  deckTitle=title;
+  renderDeck();
+}
+
+function renderDeck(){
+  deckList=allMemoriesOrdered();
+  if(!deckList.length){closeModal();return}
+  if(deckIdx>=deckList.length)deckIdx=deckList.length-1;
+  const m=deckList[deckIdx];
+  const pct=(((deckIdx+1)/deckList.length)*100).toFixed(0);
+  const ps=(m.people||[]).map(id=>S.people.find(p=>p.id==id)?.name).filter(Boolean);
+  const im=m.imgs||[];
+  const litText=m.lit||compose(m);
+  const imgAnalyses=im.length
+    ?im.map((x,k)=>`<p class="mut" style="margin-top:4px">${esc(describeImg(x,m,k))}</p>`).join('')
+    :`<p class="mut" style="margin-top:4px">المشهد الفني المعتمد لمنزل «${esc(stName(m.st))}» يبرز الطابع البصري والرمزي للحظة.</p>`;
+
+  modal(`
+    <div class="ppt-bar"><i style="width:${pct}%"></i></div>
+    <div class="ppt-head">
+      <div>
+        <span class="ppt-badge">${esc(deckTitle)} · شريحة ${deckIdx+1} من ${deckList.length}</span>
+      </div>
+      <button class="btn ghost" style="min-height:36px;padding:4px 14px" data-a="close">إغلاق</button>
+    </div>
+    <div class="ppt-stage" key="${deckIdx}">
+      <div class="slide-art">
+        ${im.length?`<img src="${im[0].url}" alt="${esc(m.title)}">`:sceneForStation(m.st)}
+        <div class="slide-cap">منزل ${esc(stName(m.st))} · تاريخ الحدث: ${m.date}${m.loc?' · '+esc(m.loc):''}</div>
+      </div>
+      <h2>${esc(m.title)}</h2>
+      ${ps.length?`<div class="chks">${ps.map(n=>`<span class="chk">${esc(n)}</span>`).join('')}</div>`:''}
+      ${m.desc?`<p style="margin-top:8px">${esc(m.desc)}</p>`:''}
+      <div class="lit">${esc(litText)}</div>
+      <div class="analysis-box">
+        <strong style="color:var(--gold)">قراءة وتحليل المشهد:</strong>
+        ${imgAnalyses}
+      </div>
+      <div class="acts">
+        <button class="btn" data-a="editm" data-id="${m.id}">تعديل الذكرى</button>
+        <button class="btn ghost" data-a="delm" data-id="${m.id}">حذف</button>
+      </div>
+    </div>
+    <div class="ppt-nav">
+      <button class="btn" data-a="prevSlide" ${deckIdx===0?'disabled':''}>السابق</button>
+      <div class="ppt-dots">
+        ${deckList.map((_,i)=>`<button type="button" class="${i===deckIdx?'on':''}" data-a="goSlide" data-id="${i}" aria-label="الذهاب إلى الشريحة ${i+1}"></button>`).join('')}
+      </div>
+      <button class="btn go" data-a="nextSlide" ${deckIdx===deckList.length-1?'disabled':''}>التالي</button>
+    </div>
+  `,'ppt-modal');
+}
+
+function openStation(id){
+  const s=S.stations.find(x=>x.id==id);if(!s)return;
+  const l=S.mem.filter(m=>m.st==id).sort(byDate);
+  const firstInAll=l.length?allMemoriesOrdered().findIndex(m=>m.id==l[0].id):0;
+  modal(`
+    <div class="slide-art">${s.img?`<img src="${s.img}" alt="${esc(s.name)}">`:sceneForStation(s.id)}</div>
+    <h2>${esc(s.name)}</h2>
+    <p class="mut">${l.length?l.length+' ذكرى في هذا المنزل':'هذا المنزل ينتظر أول ذكرى.'}</p>
+    <div class="list">${l.map(memRow).join('')}</div>
+    <div class="acts">
+      <button class="btn go" data-a="addm" data-id="${id}">قَيِّد ذكرى هنا</button>
+      ${S.mem.length?`<button class="btn" data-a="pptFromIdx" data-id="${Math.max(0,firstInAll)}">عرض كل الذكريات (${S.mem.length})</button>`:''}
+      <button class="btn ghost" data-a="close">إغلاق</button>
+    </div>`);
+}
+
+function openMem(id){
+  const list=allMemoriesOrdered();
+  const idx=list.findIndex(m=>m.id==id);
+  openDeck(idx>=0?idx:0,'عرض جميع الذكريات');
+}
+
+function drawThumbs(){
+  const t=$('#thumbs');
+  if(!t)return;
+  t.innerHTML=draft.map((d,i)=>`
+    <span class="ph">
+      <img src="${d.url}" alt="معاينة الصورة ${i+1}">
+      <button type="button" data-a="rmimg" data-id="${i}" aria-label="إزالة الصورة">إزالة</button>
+    </span>`).join('');
+  const anBox=$('#imgAnalysis');
+  if(anBox){
+    anBox.innerHTML=draft.length
+      ?draft.map((d,i)=>`<p class="mut" style="margin-top:4px">${esc(describeImg(d,{title:'الذكرى الحالية',st:S.stations[0].id},i))}</p>`).join('')
+      :'<p class="mut">اختر صوراً من الألبوم أو الكاميرا ليحللها النظام أدبياً وبصرياً.</p>';
+  }
+}
+
+const litHtml=t=>`
+  <div class="lit" contenteditable="true" role="textbox" aria-label="الصياغة الأدبية" id="litbox">${esc(t)}</div>
+  <p class="mut" style="font-size:.85rem">يمكنك تعديل النص يدوياً أو الضغط مجدداً لتوليد صياغة مختلفة.</p>`;
+
+function addMemory(st,eid){
+  const E=eid?S.mem.find(x=>x.id==eid):null;
+  if(E)st=E.st;
+  draft=E?(E.imgs||[]).slice():[];
+  variant=0;
+  const ev=k=>esc(E?E[k]||'':'');
+  modal(`
+    <h2>${E?'تعديل الذكرى':'ذكرى جديدة'}</h2>
+    <form data-f="addm" data-edit="${E?E.id:''}">
+      <label>العنوان<input name="t" required maxlength="80" value="${ev('title')}"></label>
+      <div class="g2">
+        <label>تاريخ وقوع الحدث
+          <input type="date" name="d" required max="${new Date().toISOString().slice(0,10)}" value="${ev('date')}">
+          <span class="hint-note">أدخل اليوم والشهر والسنة التي حدثت فيها الذكرى</span>
+        </label>
+        <label>الموضع
+          <input name="l" value="${ev('loc')}" placeholder="مثال: الطائف، أو بيت الجد">
+          <span class="hint-note">المكان الذي وقع فيه الحدث</span>
+        </label>
+      </div>
+      <label>المنزل<select name="s">${S.stations.map(s=>`<option value="${s.id}"${s.id==st?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label>
+      ${S.people.length?`<label>الأَخِلّاء</label><div class="chks">${S.people.map(p=>`<label class="chk"><input type="checkbox" name="pp" value="${p.id}"${E&&E.people.includes(p.id)?' checked':''}>${esc(p.name)}</label>`).join('')}</div>`:''}
+      <label>الوصف<textarea name="x" rows="2" placeholder="اكتب تفاصيل المشهد أو الحدث">${ev('desc')}</textarea></label>
+      <label>شعورك<textarea name="f" rows="2" placeholder="مثال: شعرت بفخرٍ عميق وحنين لا يوصف">${ev('feeling')}</textarea></label>
+      <label>الصور (حتى 3)</label>
+      <div class="acts">
+        <button type="button" class="btn" data-a="pick" data-id="fa">من الألبوم</button>
+        <button type="button" class="btn ghost" data-a="pick" data-id="fc">الكاميرا</button>
+      </div>
+      <input type="file" id="fa" accept="${IMG_ACCEPT}" multiple hidden data-ph="1">
+      <input type="file" id="fc" accept="${IMG_ACCEPT}" capture="environment" hidden data-ph="1">
+      <div class="th" id="thumbs"></div>
+      <div class="analysis-box" id="imgAnalysis"></div>
+      <div class="acts"><button type="button" class="btn" data-a="gen">صُغ المشاعر أدبياً</button></div>
+      <div id="aio" aria-live="polite"></div>
+      <div class="acts">
+        <button class="btn go" type="submit">حفظ الذكرى</button>
+        <button class="btn ghost" type="button" data-a="close">إلغاء</button>
+      </div>
+    </form>`);
+  drawThumbs();
+  if(E&&E.lit)$('#aio').innerHTML=litHtml(E.lit);
+}
+
+function addPerson(){
+  modal(`
+    <h2>خليل جديد</h2>
+    <form data-f="addp">
+      <label>الاسم<input name="n" required maxlength="30"></label>
+      <label>صفته أو صلته بك<input name="t" maxlength="40" placeholder="مثال: خليل الطفولة"></label>
+      <button type="button" class="btn" style="width:100%;margin-top:14px" data-a="pick" data-id="fp">اختيار صورة من الألبوم</button>
+      <input type="file" id="fp" name="p" accept="${IMG_ACCEPT}" hidden data-pv="pvp">
+      <div id="pvp" class="ct"></div>
+      <div class="acts">
+        <button class="btn go" type="submit">حفظ</button>
+        <button class="btn ghost" type="button" data-a="close">إلغاء</button>
+      </div>
+    </form>`);
+}
+
+const formMem=f=>({
+  title:f.t.value.trim(),
+  date:f.d.value,
+  loc:f.l.value.trim(),
+  st:f.s.value,
+  people:[...f.querySelectorAll('[name=pp]:checked')].map(c=>c.value),
+  desc:f.x.value.trim(),
+  feeling:f.f.value.trim()
+});
+
+/* ===== Navigation & Events ===== */
+const TABS=[['home','المَطْلَع'],['people','الأَخِلّاء'],['stations','المَنازِل'],['archive','السِّجِلّ'],['settings','التَّدْبِير']];
+$('#nav').innerHTML=TABS.map(t=>`<button data-a="tab" data-id="${t[0]}">${t[1]}</button>`).join('');
+
+function render(){
+  $('#nav').hidden=!S.user;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.id==V));
+  $('#app').innerHTML=S.user?VIEWS[V]():onboard();
+  scrollTo(0,0);
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a]');if(!t)return;
+  const a=t.dataset.a,id=t.dataset.id;
+  if(a=='bg'){if(e.target==t)closeModal();return}
+  if(a=='tab'){V=id;render();return}
+  if(a=='close')return closeModal();
+  if(a=='pick')return openPicker($('#'+id));
+  if(a=='st')return openStation(id);
+  if(a=='mem')return openMem(id);
+  if(a=='pptAll')return openDeck(0,'عرض جميع الذكريات');
+  if(a=='pptFromIdx')return openDeck(+id||0,'عرض جميع الذكريات');
+  if(a=='prevSlide'){if(deckIdx>0){deckIdx--;renderDeck()}return}
+  if(a=='nextSlide'){if(deckIdx<deckList.length-1){deckIdx++;renderDeck()}return}
+  if(a=='goSlide'){deckIdx=+id;renderDeck();return}
+  if(a=='addm')return addMemory(id);
+  if(a=='editm')return addMemory(null,id);
+  if(a=='addp')return addPerson();
+  if(a=='rmimg'){draft.splice(+id,1);drawThumbs();return}
+  if(a=='gen'){
+    const f=t.closest('form'),m=formMem(f);
+    if(!m.feeling&&!m.desc&&!m.title){toast('اكتب عنواناً أو شعوراً أو وصفاً أولاً');return}
+    $('#aio').innerHTML=litHtml(compose(m,variant++));
+    return;
+  }
+  if(a=='delm')return confirmBtn(t,()=>{
+    S.mem=S.mem.filter(m=>m.id!=id);save();
+    if($('#ov .ppt-modal'))renderDeck();
+    else{closeModal();render()}
+    toast('تم حذف الذكرى');
+  });
+  if(a=='delp')return confirmBtn(t,()=>{
+    S.people=S.people.filter(p=>p.id!=id);
+    S.mem.forEach(m=>m.people=m.people.filter(p=>p!=id));
+    save();render();toast('تم حذف الخليل');
+  });
+  if(a=='delst')return confirmBtn(t,()=>{
+    if(S.mem.some(m=>m.st==id))return toast('انقل ذكريات المنزل أو احذفها أولاً');
+    S.stations=S.stations.filter(s=>s.id!=id);save();render();
+  });
+  if(a=='rbg'){S.bg=null;save();applyBg();toast('عادت الخلفية الافتراضية');return}
+  if(a=='exp'){
+    const u=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
+    const l=document.createElement('a');l.href=u;l.download='memory-city.json';l.click();URL.revokeObjectURL(u);return;
+  }
+  if(a=='reset')return confirmBtn(t,()=>{S=fresh();save();applyBg();V='home';render()});
+});
+
+document.addEventListener('change',async e=>{
+  const t=e.target,f=t.files&&t.files[0];if(!f)return;
+  try{
+    if(t.dataset.pv){
+      $('#'+t.dataset.pv).innerHTML=`<img class="pvimg" src="${URL.createObjectURL(f)}" alt="معاينة الصورة">`;
+    }else if(t.dataset.bg){
+      const o=S.bg;S.bg=(await readImg(f,1280,.6)).url;
+      if(save())applyBg();else S.bg=o;toast('تم تغيير الخلفية');
+    }else if(t.dataset.sti){
+      const s=S.stations.find(x=>x.id==t.dataset.sti),o=s.img;
+      s.img=(await readImg(f,240,.75)).url;
+      if(save())render();else s.img=o;
+    }else if(t.dataset.ph){
+      if(draft.length>=3){toast('الحد الأقصى 3 صور، أزل صورة لإضافة أخرى');t.value='';return}
+      for(const file of [...t.files].slice(0,3-draft.length)){
+        if(file.type.startsWith('image/'))draft.push(await readImg(file,720,.65));
+      }
+      drawThumbs();t.value='';
+    }
+  }catch(x){toast('تعذّر قراءة الصورة المختارة')}
+});
+
+document.addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.target,k=f.dataset.f,v=n=>f.elements[n].value.trim();
+  if(k=='start'){S.user={name:v('n'),year:+v('y')};save();render();toast('أهلاً بك في مدينتك')}
+  if(k=='prof'){S.user={name:v('n'),year:+v('y')};save();toast('تم الحفظ')}
+  if(k=='addst'){
+    let img=null;const file=f.elements.i.files[0];
+    try{if(file)img=(await readImg(file,240,.75)).url}catch(x){return toast('الصورة غير صالحة')}
+    S.stations.push({id:uid('c'),name:v('n'),img});
+    if(save())render();else S.stations.pop();
+  }
+  if(k=='addp'){
+    let photo=null;const file=f.elements.p.files[0];
+    try{if(file)photo=(await readImg(file,240,.72)).url}catch(x){return toast('الصورة غير صالحة')}
+    S.people.push({id:uid('p'),name:v('n'),trait:v('t'),photo});
+    if(save()){closeModal();render();toast('تمت إضافة الخليل')}else S.people.pop();
+  }
+  if(k=='addm'){
+    const eid=f.dataset.edit,lb=$('#litbox'),old=eid&&S.mem.find(x=>x.id==eid);
+    const m=Object.assign(formMem(f),{id:eid||uid('m'),imgs:draft,createdAt:old?old.createdAt:Date.now()});
+    if(!m.date){toast('يرجى تحديد تاريخ وقوع الحدث');f.d.focus();return}
+    m.lit=lb?lb.textContent.trim():compose(m);
+    if(old){
+      const i=S.mem.indexOf(old);S.mem[i]=m;
+      if(save()){closeModal();render();toast('تم تحديث الذكرى')}else S.mem[i]=old;
+    }else{
+      S.mem.push(m);
+      if(save()){closeModal();render();toast('أُضيفت الذكرى إلى مدينتك')}else S.mem.pop();
+    }
+  }
+});
+
+document.addEventListener('input',e=>{if(e.target.id=='q')$('#res').innerHTML=archList(e.target.value)});
+document.addEventListener('keydown',e=>{
+  if(e.key=='Escape')closeModal();
+  if($('#ov .ppt-modal')){
+    if(e.key=='ArrowRight'&&deckIdx>0){deckIdx--;renderDeck()}
+    if(e.key=='ArrowLeft'&&deckIdx<deckList.length-1){deckIdx++;renderDeck()}
+  }
+});
+
+/* ===== Ambient Gold Dust ===== */
+(()=>{
+  if(reduced)return;
+  const c=$('#fx'),x=c.getContext('2d');let W,H,P=[],on=true;
+  const rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight;P=Array.from({length:Math.min(48,W/15|0)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.4,v:Math.random()*.22+.07,p:Math.random()*6.28}))};
+  rs();addEventListener('resize',rs);
+  document.addEventListener('visibilitychange',()=>{on=!document.hidden;if(on)loop()});
+  function loop(){
+    if(!on)return;
+    x.clearRect(0,0,W,H);x.fillStyle='#e6c27a';
+    for(const p of P){
+      p.y-=p.v;p.x+=Math.sin(p.p+=.01)*.25;
+      if(p.y<-5){p.y=H+5;p.x=Math.random()*W}
+      x.globalAlpha=.18+.35*Math.abs(Math.sin(p.p));
+      x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fill();
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+  if(matchMedia('(pointer:fine)').matches){
+    addEventListener('pointermove',e=>{
+      const s=$('#bg').style;
+      s.setProperty('--px',((e.clientX/innerWidth-.5)*-14)+'px');
+      s.setProperty('--py',((e.clientY/innerHeight-.5)*-14)+'px');
+    },{passive:true});
+  }
+})();
+
+applyBg();render();
+</script>
+</body>
+</html>
